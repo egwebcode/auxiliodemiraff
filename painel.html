@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AUXÍLIO DE MIRA FF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0040; /* Vermelho Neon Agressivo */
+            --secondary: #9d00ff; /* Roxo Cyber */
+            --bg: #050505;
+            --glass: rgba(10, 10, 12, 0.92);
+            --border: rgba(255, 0, 64, 0.3);
+            --text: #ffffff;
+            --success: #00ff9d;
+            --text-muted: #888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Canvas Background */
+        #canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Container Principal */
+        .interface {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 360px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(255, 0, 64, 0.2);
+            overflow: hidden;
+            animation: bootUp 0.5s ease-out;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(180deg, rgba(255,0,64,0.1) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .version-badge {
+            font-size: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 20px;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .status-online {
+            color: var(--success);
+            text-shadow: 0 0 5px var(--success);
+        }
+
+        /* Conteúdo */
+        .content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Cards */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .feature-card.column {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .feature-card.active {
+            background: rgba(255, 0, 64, 0.08);
+            border-color: var(--primary);
+            box-shadow: inset 0 0 15px rgba(255, 0, 64, 0.1);
+        }
+
+        .feature-info h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #eee;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-info p {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a1a1a;
+            transition: .3s;
+            border-radius: 20px;
+            border: 1px solid #333;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #666;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { border-color: var(--primary); }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        /* Range Slider Customizado */
+        .range-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .range-value {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 12px;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        /* Console Log */
+        .console-container {
+            margin: 0 20px 15px;
+            background: #000;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 10px;
+            height: 70px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 9px;
+            opacity: 0.9;
+        }
+        .log-line { margin-bottom: 2px; }
+
+        /* Botão */
+        .bottom-area { padding: 0 20px 20px; }
+        .btn-launch {
+            width: 100%;
+            padding: 14px;
+            background: #111;
+            border: 1px solid #333;
+            color: #555;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-launch.ready {
+            background: linear-gradient(90deg, #ff0040, #9d00ff);
+            color: #fff;
+            border: none;
+            box-shadow: 0 5px 20px rgba(255, 0, 64, 0.3);
+            animation: pulseBtn 2s infinite;
+        }
+
+        @keyframes pulseBtn {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 64, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 64, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 64, 0); }
+        }
+        @keyframes bootUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div class="interface">
+        <div class="header">
+            <h1>AUXÍLIO DE MIRA FF</h1>
+            <span class="version-badge">VERSION 2.0 ULTIMATE</span>
+        </div>
+
+        <div class="status-bar">
+            <span>SYSTEM: <span class="status-online">CONNECTED</span></span>
+            <span>PING: 14ms</span>
+        </div>
+
+        <div class="content">
+            <!-- 1. Grudar no Peito -->
+            <div class="feature-card" id="card-chest">
+                <div class="feature-info">
+                    <h3>GRUDAR NO PEITO</h3>
+                    <p>Focalização automática torso</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" onchange="toggle(this, 'AIM_CHEST_LOCK', 'card-chest')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- 2. Capa Pressionar Mira -->
+            <div class="feature-card" id="card-scope">
+                <div class="feature-info">
+                    <h3>CAPA PRESSIONAR MIRA</h3>
+                    <p>Ativa HS ao abrir a mira</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" onchange="toggle(this, 'SCOPE_HEADSHOT_V3', 'card-scope')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- 3. Taxa de Capa (Slider) -->
+            <div class="feature-card column" id="card-rate">
+                <div class="range-header">
+                    <div class="feature-info">
+                        <h3>TAXA DE CAPA</h3>
+                        <p>Probabilidade de acerto crítico</p>
+                    </div>
+                    <span class="range-value" id="rate-display">35%</span>
+                </div>
+                <input type="range" min="35" max="50" value="35" step="1" id="rate-slider" oninput="updateRate(this.value)" onchange="logRate(this.value)">
+            </div>
+
+            <!-- 4. FPS para 100 -->
+            <div class="feature-card" id="card-fps">
+                <div class="feature-info">
+                    <h3>FPS PARA 100</h3>
+                    <p>Unlock max framerate</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" onchange="toggle(this, 'FPS_UNLOCK_100', 'card-fps')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="console-container" id="console">
+            <div class="log-line">> SYSTEM READY...</div>
+            <div class="log-line" style="color:#666">> WAITING FOR INJECTION...</div>
+        </div>
+
+        <div class="bottom-area">
+            <button class="btn-launch" id="btn-action" onclick="launchGame()">AGUARDANDO CONFIG</button>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIC CORE ---
+        let activeMods = 0;
+        const btn = document.getElementById('btn-action');
+        const consoleDiv = document.getElementById('console');
+
+        function log(msg, type = 'normal') {
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            
+            const time = new Date().toLocaleTimeString('pt-BR', {hour12:false});
+            const hex = Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0');
+
+            if(type === 'success') div.style.color = '#00ff9d';
+            if(type === 'warn') div.style.color = '#ffcc00';
+            if(type === 'error') div.style.color = '#ff0040';
+
+            div.innerHTML = `<span style="opacity:0.5">[${hex}]</span> ${msg}`;
+            consoleDiv.insertBefore(div, consoleDiv.firstChild); // Insert at top (flex-reverse handles visual)
+            
+            if(consoleDiv.children.length > 8) consoleDiv.lastChild.remove();
+        }
+
+        function toggle(checkbox, scriptName, cardId) {
+            const card = document.getElementById(cardId);
+            
+            if(checkbox.checked) {
+                activeMods++;
+                card.classList.add('active');
+                log(`INJECTING: ${scriptName}...`);
+                setTimeout(() => {
+                    log(`${scriptName} -> ACTIVE`, 'success');
+                    checkStatus();
+                }, 300);
+            } else {
+                activeMods--;
+                card.classList.remove('active');
+                log(`DISABLING: ${scriptName}`, 'warn');
+                checkStatus();
+            }
+        }
+
+        function updateRate(val) {
+            document.getElementById('rate-display').innerText = val + "%";
+            document.getElementById('card-rate').classList.add('active');
+        }
+
+        function logRate(val) {
+            log(`SETTING HS RATE -> ${val}%`, 'success');
+            // Check if user interacted, count as active mod if not already
+            const card = document.getElementById('card-rate');
+            if(!card.classList.contains('has-interacted')) {
+                card.classList.add('has-interacted');
+                activeMods++; 
+                checkStatus();
+            }
+        }
+
+        function checkStatus() {
+            if(activeMods > 0) {
+                btn.innerText = "ABRIR FREE FIRE";
+                btn.classList.add('ready');
+            } else {
+                btn.innerText = "AGUARDANDO CONFIG";
+                btn.classList.remove('ready');
+            }
+        }
+
+        function launchGame() {
+            if(activeMods === 0) {
+                log("ERROR: SELECT FEATURES FIRST", 'error');
+                return;
+            }
+            
+            btn.innerText = "EXECUTANDO...";
+            log("BYPASSING SECURITY...", 'warn');
+            
+            setTimeout(() => {
+                log("LAUNCHING COM.DTS.FREEFIRETH", 'success');
+                // Deep Link Universal para Android
+                window.location.href = "intent://freefire/#Intent;scheme=freefire;package=com.dts.freefireth;end";
+                
+                setTimeout(() => {
+                    btn.innerText = "ABRIR FREE FIRE";
+                }, 3000);
+            }, 1200);
+        }
+
+        // --- PARTICLES FX ---
+        const cvs = document.getElementById('canvas-bg');
+        const ctx = cvs.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            cvs.width = window.innerWidth;
+            cvs.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * cvs.width;
+                this.y = Math.random() * cvs.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+                this.color = Math.random() > 0.5 ? '#ff0040' : '#9d00ff';
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if(this.x < 0 || this.x > cvs.width) this.vx *= -1;
+                if(this.y < 0 || this.y > cvs.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        for(let i=0; i<50; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            // Connect lines
+            ctx.strokeStyle = 'rgba(255, 0, 64, 0.05)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<particles.length; i++) {
+                for(let j=i; j<particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUXÍLIO DE MIRA FF | SYSTEM LOGIN</title>
+    
+    <!-- SYSTEM DEPENDENCIES: Tailwind CSS & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CORE STYLES -->
+    <style>
+        :root {
+            --neon-primary: #ff0055;
+            --neon-secondary: #00eaff;
+            --bg-dark: #050505;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(20, 20, 30, 0.9), #000),
+                linear-gradient(0deg, rgba(0, 234, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 234, 255, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Glitch Effect for Title */
+        .glitch {
+            position: relative;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 2px 2px var(--neon-primary), -2px -2px var(--neon-secondary);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { text-shadow: 2px 2px var(--neon-primary), -2px -2px var(--neon-secondary); transform: translate(0); }
+            20% { text-shadow: -2px 2px var(--neon-primary), 2px -2px var(--neon-secondary); transform: translate(-2px, 2px); }
+            40% { text-shadow: 2px -2px var(--neon-primary), -2px 2px var(--neon-secondary); transform: translate(2px, -2px); }
+            100% { text-shadow: 0 0 transparent; transform: translate(0); }
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 234, 255, 0.1), inset 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Input Styling */
+        .input-group {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--neon-secondary);
+            box-shadow: 0 0 10px rgba(0, 234, 255, 0.3);
+            outline: none;
+        }
+
+        /* Button Styling */
+        .btn-login {
+            background: linear-gradient(45deg, var(--neon-primary), #990033);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+        }
+
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.6);
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        /* Error Animation */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: var(--neon-primary) !important;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="text-white selection:bg-pink-600 selection:text-white">
+
+    <!-- CROSSHAIR OVERLAY -->
+    <div class="fixed inset-0 pointer-events-none z-0 opacity-20 flex items-center justify-center">
+        <div class="w-[500px] h-[1px] bg-cyan-500 absolute"></div>
+        <div class="h-[500px] w-[1px] bg-cyan-500 absolute"></div>
+        <div class="w-[300px] h-[300px] border border-cyan-500 rounded-full absolute"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="relative z-10 w-full max-w-md p-8 rounded-2xl glass-panel mx-4">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-block p-3 rounded-full border-2 border-cyan-500 mb-4 shadow-[0_0_15px_rgba(0,234,255,0.5)]">
+                <i class="fa-solid fa-crosshairs text-3xl text-cyan-400"></i>
+            </div>
+            <h1 class="text-3xl tracking-widest glitch mb-2">AUXÍLIO DE MIRA</h1>
+            <p class="text-gray-400 text-sm tracking-[0.2em] font-bold">FF ACCESS TERMINAL V.2.0</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-6" onsubmit="event.preventDefault(); handleLogin();">
+            
+            <!-- User Input -->
+            <div class="input-group">
+                <label class="block text-xs uppercase tracking-wider text-cyan-400 mb-1 font-bold">Usuário</label>
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-3 top-3.5 text-gray-500 text-sm"></i>
+                    <input type="text" id="username" placeholder="Digite seu ID..." 
+                        class="input-field w-full py-3 pl-10 pr-4 rounded bg-black/50 text-sm placeholder-gray-600 focus:text-white" required>
+                </div>
+            </div>
+
+            <!-- Pass Input -->
+            <div class="input-group">
+                <label class="block text-xs uppercase tracking-wider text-cyan-400 mb-1 font-bold">Senha</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-500 text-sm"></i>
+                    <input type="password" id="password" placeholder="Chave de Acesso..." 
+                        class="input-field w-full py-3 pl-10 pr-4 rounded bg-black/50 text-sm placeholder-gray-600 focus:text-white" required>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMsg" class="h-6 text-center text-xs font-bold tracking-wider opacity-0 transition-opacity duration-300">
+                Aguardando credenciais...
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="loginBtn" class="btn-login w-full py-3 font-bold uppercase tracking-widest text-white shadow-lg text-sm">
+                <span id="btnText">CONECTAR SISTEMA</span>
+                <i id="btnIcon" class="fa-solid fa-power-off ml-2"></i>
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center border-t border-gray-800 pt-4">
+            <p class="text-[10px] text-gray-600 uppercase">
+                Status do Servidor: <span class="text-green-500 animate-pulse">ONLINE</span> <br>
+                Segurança: ENCRIPTADA
+            </p>
+        </div>
+    </main>
+
+    <!-- LOGIC CORE -->
+    <script>
+        // NEXUS LOGIC: DATABASE
+        const AUTHORIZED_USERS = [
+            { user: 'admin', pass: 'admin123' },
+            { user: 'pro_player', pass: 'capa100' },
+            { user: 'vip_member', pass: 'aimbot2025' },
+            { user: 'store', pass: 'vendas' },
+            { user: 'dev', pass: 'nexus' }
+        ];
+
+        const loginForm = document.getElementById('loginForm');
+        const userIn = document.getElementById('username');
+        const passIn = document.getElementById('password');
+        const statusMsg = document.getElementById('statusMsg');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+
+        function handleLogin() {
+            // Reset UI
+            statusMsg.style.opacity = '0';
+            userIn.classList.remove('shake');
+            passIn.classList.remove('shake');
+            
+            // UI Loading State
+            loginBtn.disabled = true;
+            btnText.innerText = "VERIFICANDO...";
+            btnIcon.classList.remove('fa-power-off');
+            btnIcon.classList.add('fa-circle-notch', 'fa-spin');
+            loginBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            const uVal = userIn.value.trim();
+            const pVal = passIn.value.trim();
+
+            // Simulate Server Delay (1.5s)
+            setTimeout(() => {
+                const isValid = AUTHORIZED_USERS.some(cred => cred.user === uVal && cred.pass === pVal);
+
+                if (isValid) {
+                    successSequence();
+                } else {
+                    errorSequence();
+                }
+            }, 1500);
+        }
+
+        function successSequence() {
+            statusMsg.innerText = "ACESSO CONCEDIDO. INICIANDO...";
+            statusMsg.className = "h-6 text-center text-xs font-bold tracking-wider text-green-400";
+            statusMsg.style.opacity = '1';
+
+            btnText.innerText = "SUCESSO";
+            btnIcon.className = "fa-solid fa-check ml-2";
+            loginBtn.style.background = "linear-gradient(45deg, #00ff88, #00cc6a)";
+
+            // Redirect Logic
+            setTimeout(() => {
+                window.location.href = './painel.html';
+            }, 1000);
+        }
+
+        function errorSequence() {
+            statusMsg.innerText = "ERRO: CREDENCIAIS INVÁLIDAS";
+            statusMsg.className = "h-6 text-center text-xs font-bold tracking-wider text-red-500";
+            statusMsg.style.opacity = '1';
+
+            // Reset Button
+            loginBtn.disabled = false;
+            btnText.innerText = "CONECTAR SISTEMA";
+            btnIcon.className = "fa-solid fa-power-off ml-2";
+            loginBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+
+            // Shake Effect
+            userIn.classList.add('shake');
+            passIn.classList.add('shake');
+            
+            // Remove shake class after animation so it can trigger again
+            setTimeout(() => {
+                userIn.classList.remove('shake');
+                passIn.classList.remove('shake');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
